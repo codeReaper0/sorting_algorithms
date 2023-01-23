@@ -1,67 +1,82 @@
 #include "sort.h"
-#include <stdio.h>
-/**
- *swap_node - swap a node for his previous one
- *@node: node
- *@list: node list
- *Return: return a pointer to a node which was enter it
- */
-listint_t *swap_node(listint_t *node, listint_t **list)
-{
-	listint_t *back = node->prev, *current = node;
-	/*NULL, 19, 48, 9, 71, 13, NULL*/
 
-	back->next = current->next;
-	if (current->next)
-		current->next->prev = back;
-	current->next = back;
-	current->prev = back->prev;
-	back->prev = current;
-	if (current->prev)
-		current->prev->next = current;
-	else
-		*list = current;
-	return (current);
-}
 /**
- *cocktail_sort_list - this is a cocktail sort implementation
- *working on a double linked lists
- *@list: list
- */
+* swap_nodes - Swaps two adjacent nodes in a
+*				listint_t doubly-linked list of ints.
+* @left_node: A pointer to the Left adjacent node.
+* @right_node: A pointer to the right adjacent node.
+* @list: A double pointer to head of list.
+*/
+void swap_nodes(listint_t **list, listint_t *left_node, listint_t *right_node)
+{
+	listint_t *temp = left_node->prev;
+
+	/* adjust the adjacent nodes of left_node */
+	if (temp)
+		temp->next = right_node;
+	right_node->prev = temp;
+
+	/* adjust pointers of left_node */
+	left_node->next = right_node->next;
+	left_node->prev = right_node;
+
+	/* adjust rightnode pointer to left node */
+	right_node->next = left_node;
+
+	/* adjust new node infronf of left_node back to it */
+	if (left_node->next != NULL)
+		left_node->next->prev = left_node;
+	/* set the head pointer */
+	if (right_node->prev == NULL)
+		(*list) = right_node;
+	print_list(*list);
+}
+
+/**
+* cocktail_sort_list - Sort a listint_t doubly-linked list of integers in
+*                      ascending order using the cocktail shaker algorithm.
+* @list: A pointer to the head of a listint_t doubly-linked list.
+*/
 void cocktail_sort_list(listint_t **list)
 {
-	listint_t *node;
-	int swap_done = 1;
+	listint_t *current = NULL;
+	bool swapped = true;
 
-	if (list == '\0' || (*list) == '\0' || (*list)->next == '\0')
+	if (list == NULL || (*list) == NULL || (*list)->next == NULL)
 		return;
-	node = *list;
-	while (swap_done == 1)
+
+	while (swapped)
 	{
-		swap_done = 0;
-		while (node->next)
+		swapped = false;
+
+		current = (*list);
+		while (current->next != NULL)
 		{
-			if (node->n > node->next->n)
+			if (current->next)
 			{
-				node = swap_node(node->next, list);
-				swap_done = 1;
-				print_list(*list);
+				if (current->n > current->next->n)
+				{
+					swap_nodes(list, current, current->next);
+					swapped = true;
+				}
+				else
+					current = current->next;
 			}
-			node = node->next;
 		}
-		if (swap_done == 0)
+
+		if (!swapped)
 			break;
-		swap_done = 0;
-		while (node->prev)
+
+		current = current->prev;
+		while (current->prev != NULL)
 		{
-			if (node->n < node->prev->n)
+			if (current->prev->n > current->n)
 			{
-				node = swap_node(node, list);
-				swap_done = 1;
-				print_list(*list);
+				swap_nodes(list, current->prev, current);
+				swapped = true;
 			}
 			else
-				node = node->prev;
+				current = current->prev;
 		}
 	}
 }
